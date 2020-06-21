@@ -1,0 +1,65 @@
+{% extends 'world/base.html' %}
+{% load leaflet_tags %}
+{% block head %}
+<style>
+
+    .leaflet-container {  /* all maps */
+        width:  600px;
+        height: 400px;
+    }
+
+    #specialbigmap {
+        height: 800px;
+    }
+
+    /* Resize the "display_raw" textbox */
+    .django-leaflet-raw-textarea {
+        width: 100%;
+    }
+
+</style>
+{% endblock head %}
+{% block js %}
+    <script type="text/javascript">
+    function map_init(map, options) {
+        // get the polygon shape for the region
+        var region = {{ countrydivision.geom.json|safe }};
+        // get point lat and lon
+        var point = turf.centroid(region);
+        var zoom_factor = {{ countrydivision.world_border.default_zoom|default:1 }};
+        console.log(point);
+        // zoom to point & add it to map
+        map.setView([
+                point.geometry.coordinates[1], point.geometry.coordinates[0]
+            ], zoom_factor*1.5
+        );
+        map.on('load', function () {
+            $('#loading').hide();
+        });
+        var a = L.geoJSON(region);
+        console.log(a.geometry);
+        a.addTo(map);
+
+    }
+    $('#loading').hide();
+</script>
+{% endblock js %}
+{% block content %}
+<div>
+    <div class="sk-chase" id="loading">
+      <div class="sk-chase-dot"></div>
+      <div class="sk-chase-dot"></div>
+      <div class="sk-chase-dot"></div>
+      <div class="sk-chase-dot"></div>
+      <div class="sk-chase-dot"></div>
+      <div class="sk-chase-dot"></div>
+    </div>
+    <h1>{{ countrydivision.name_2 }}</h1>
+    {% leaflet_map "main" callback="map_init" %}
+</div>
+    {% for distance in countrydivision.distances.all %}
+        {% if distance.destination != distance.origin %}
+        <p>{{ distance }}</p>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
