@@ -3,6 +3,5 @@ from django.contrib import admin
 
 
 urlpatterns = [
-    url(r'^world/', include('world.urls')),
-    url('admin/', admin.site.urls),
+    url(r'^world/', include('geo_django.world.urls'), name='world'),
 ]
